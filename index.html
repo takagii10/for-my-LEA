@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+  <meta name="theme-color" content="#fff0f5">
+  <title>For My Favorite Person 💗</title>
+
+  <style>
+    :root {
+      --pink: #ff5c8a;
+      --dark-pink: #d93668;
+      --cream: #fffaf6;
+      --text: #55263a;
+      --card: rgba(255, 255, 255, 0.86);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top left, #ffd6e3, transparent 35%),
+        radial-gradient(circle at bottom right, #ffe8b7, transparent 35%),
+        var(--cream);
+      overflow-x: hidden;
+    }
+
+    body.locked {
+      overflow: hidden;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    /* Opening screen */
+    .intro {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      text-align: center;
+      background: linear-gradient(145deg, #ffd9e5, #fff8f2);
+      transition: opacity 0.8s ease, visibility 0.8s ease;
+    }
+
+    .intro.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .envelope {
+      width: min(360px, 92vw);
+      padding: 34px 24px;
+      background: white;
+      border: 2px solid #ffc1d3;
+      border-radius: 28px;
+      box-shadow: 0 20px 60px rgba(167, 52, 94, 0.18);
+      animation: float 2.6s ease-in-out infinite;
+    }
+
+    .envelope-icon {
+      font-size: 64px;
+    }
+
+    .envelope h1 {
+      margin: 12px 0 8px;
+      font-size: clamp(2rem, 10vw, 3.4rem);
+    }
+
+    .envelope p {
+      margin: 0 0 22px;
+      line-height: 1.6;
+    }
+
+    .primary-button {
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 24px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--pink), var(--dark-pink));
+      box-shadow: 0 10px 24px rgba(217, 54, 104, 0.28);
+      transition: transform 0.2s ease;
+    }
+
+    .primary-button:hover {
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    /* Main page */
+    main {
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    main.visible {
+      opacity: 1;
+    }
+
+    section {
+      width: min(960px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 72px 0;
+    }
+
+    .hero {
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
+
+    .hero-content {
+      max-width: 720px;
+    }
+
+    .eyebrow {
+      color: var(--dark-pink);
+      font-weight: bold;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2 {
+      line-height: 1.1;
+    }
+
+    .hero h1 {
+      margin: 14px 0;
+      font-size: clamp(3rem, 13vw, 7rem);
+    }
+
+    .hero p {
+      font-size: clamp(1.05rem, 4vw, 1.35rem);
+      line-height: 1.7;
+    }
+
+    .scroll-hint {
+      display: inline-block;
+      margin-top: 26px;
+      color: var(--dark-pink);
+      text-decoration: none;
+      animation: bounce 1.5s infinite;
+    }
+
+    .section-title {
+      margin: 0 0 30px;
+      text-align: center;
+      font-size: clamp(2rem, 8vw, 3.6rem);
+    }
+
+    /* Photo gallery */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .photo-card {
+      margin: 0;
+      padding: 12px 12px 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 14px 35px rgba(100, 43, 65, 0.14);
+      transform: rotate(-2deg);
+      cursor: pointer;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      position: relative;
+    }
+
+    .photo-card:hover {
+      transform: scale(1.03) rotate(0deg);
+      box-shadow: 0 18px 40px rgba(100, 43, 65, 0.22);
+    }
+
+    .photo-card:nth-child(even) {
+      transform: rotate(2deg);
+    }
+
+    .photo-card:nth-child(even):hover {
+      transform: scale(1.03) rotate(0deg);
+    }
+
+    .photo-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 5;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .photo-card img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .photo-card.revealed img {
+      opacity: 1;
+    }
+
+    /* Tap-to-Reveal Overlay Mask */
+    .photo-mask {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #ffc1d3, #ffe3ec);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      text-align: center;
+      color: var(--dark-pink);
+      font-weight: bold;
+      font-size: 0.95rem;
+      border-radius: 4px;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+      z-index: 2;
+    }
+
+    .photo-mask-icon {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+      animation: bounce 1.8s infinite;
+    }
+
+    .photo-card.revealed .photo-mask {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .photo-card figcaption {
+      padding-top: 14px;
+      text-align: center;
+      line-height: 1.5;
+      opacity: 0.3;
+      filter: blur(4px);
+      transition: opacity 0.5s ease, filter 0.5s ease;
+      user-select: none;
+    }
+
+    .photo-card.revealed figcaption {
+      opacity: 1;
+      filter: blur(0);
+      user-select: auto;
+    }
+
+    /* Lightbox Modal (Click to View Photo) */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(40, 15, 25, 0.88);
+      backdrop-filter: blur(6px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .lightbox.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .lightbox-content {
+      max-width: 90vw;
+      max-height: 80vh;
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      object-fit: contain;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+
+    .lightbox.active .lightbox-content {
+      transform: scale(1);
+    }
+
+    .lightbox-caption {
+      margin-top: 16px;
+      color: #fff0f5;
+      font-size: 1.15rem;
+      text-align: center;
+      max-width: 600px;
+      line-height: 1.5;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.25);
+      border: none;
+      color: white;
+      font-size: 28px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: background 0.2s ease;
+    }
+
+    .lightbox-close:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Timeline */
+    .timeline {
+      display: grid;
+      gap: 18px;
+    }
+
+    .memory {
+      padding: 22px;
+      background: var(--card);
+      border: 1px solid #ffd0de;
+      border-radius: 22px;
+      box-shadow: 0 10px 30px rgba(100, 43, 65, 0.08);
+    }
+
+    .memory time {
+      color: var(--dark-pink);
+      font-weight: bold;
+    }
+
+    .memory h3 {
+      margin: 8px 0;
+      font-size: 1.4rem;
+    }
+
+    .memory p {
+      margin: 0;
+      line-height: 1.7;
+    }
+
+    /* Letter */
+    .letter {
+      position: relative;
+      padding: clamp(24px, 7vw, 58px);
+      background: #fffdf8;
+      border: 1px solid #ead9cd;
+      border-radius: 8px;
+      box-shadow: 0 18px 45px rgba(100, 43, 65, 0.12);
+      line-height: 1.9;
+      font-size: 1.08rem;
+    }
+
+    .letter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .letter-date {
+      color: var(--dark-pink);
+      font-weight: bold;
+      font-size: 0.95rem;
+    }
+
+    .signature {
+      margin-top: 28px;
+      font-size: 1.3rem;
+      font-style: italic;
+    }
+
+    /* Final reveal */
+    .finale {
+      text-align: center;
+      padding-bottom: 120px;
+    }
+
+    .reveal-box {
+      min-height: 240px;
+      display: grid;
+      place-items: center;
+      padding: 30px;
+      background: linear-gradient(145deg, #fff, #ffeaf1);
+      border: 2px dashed #ff9dbc;
+      border-radius: 30px;
+    }
+
+    .secret {
+      display: none;
+      animation: pop 0.6s ease;
+    }
+
+    .secret.shown {
+      display: block;
+    }
+
+    .secret h2 {
+      margin: 0 0 12px;
+      font-size: clamp(1.8rem, 8vw, 3.8rem);
+      line-height: 1.3;
+    }
+
+    /* Floating decorations */
+    .heart {
+      position: fixed;
+      bottom: -40px;
+      z-index: 10;
+      pointer-events: none;
+      animation: rise linear forwards;
+    }
+
+    .music-button {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 30;
+      width: 52px;
+      height: 52px;
+      border: 0;
+      border-radius: 50%;
+      color: white;
+      cursor: pointer;
+      background: var(--dark-pink);
+      box-shadow: 0 8px 20px rgba(100, 43, 65, 0.28);
+    }
+
+    @keyframes float {
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    @keyframes bounce {
+      50% {
+        transform: translateY(8px);
+      }
+    }
+
+    @keyframes pop {
+      from {
+        opacity: 0;
+        transform: scale(0.7);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes rise {
+      to {
+        transform: translateY(-115vh) rotate(25deg);
+        opacity: 0;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .gallery {
+        grid-template-columns: 1fr;
+      }
+
+      .photo-card,
+      .photo-card:nth-child(even) {
+        transform: rotate(0);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="locked">
+  <div class="intro" id="intro">
+    <div class="envelope">
+      <div class="envelope-icon">💌</div>
+      <h1>For Lea M. Adriano</h1>
+      <p>I made a tiny corner of the internet just for you.</p>
+      <button class="primary-button" id="openButton">
+        Open your surprise
+      </button>
+    </div>
+  </div>
+
+  <main id="main">
+    <section class="hero">
+      <div class="hero-content">
+        <div class="eyebrow">A little surprise for my favorite person</div>
+        <h1>Hello, My Sunshine 💗</h1>
+        <p>
+          Every day with you becomes a memory I want to keep forever.
+          So I collected a few of my favorites here.
+        </p>
+        <a class="scroll-hint" href="#photos">Scroll for your surprise ↓</a>
+      </div>
+    </section>
+
+    <section id="photos">
+      <h2 class="section-title">TITLE: ANG ISANG FEELINGS AT ANG ISANG PUMALDO</h2>
+
+      <div class="gallery">
+        <figure class="photo-card">
+          <div class="photo-wrapper">
+            <div class="photo-mask">
+              <span class="photo-mask-icon">💖</span>
+              <span>Tap to reveal memory</span>
+            </div>
+            <img src="photos/photo1.jpg" alt="Our moment">
+          </div>
+          <figcaption>Our first picture.Tapos ayaw mo pa i-send sa akin >:c</figcaption>
+        </figure>
+
+        <figure class="photo-card">
+          <div class="photo-wrapper">
+            <div class="photo-mask">
+              <span class="photo-mask-icon">💖</span>
+              <span>Tap to reveal memory</span>
+            </div>
+            <img src="photos/photo2.jpg" alt="Our moment">
+          </div>
+          <figcaption>KFC dinner HEHE. After neto nag Zeus tayo</figcaption>
+        </figure>
+
+        <figure class="photo-card">
+          <div class="photo-wrapper">
+            <div class="photo-mask">
+              <span class="photo-mask-icon">💖</span>
+              <span>Tap to reveal memory</span>
+            </div>
+            <img src="photos/photo3.jpg" alt="Our moment">
+          </div>
+          <figcaption>I.LOVE.THIS.PHOTO.OF.YOU.</figcaption>
+        </figure>
+
+        <figure class="photo-card">
+          <div class="photo-wrapper">
+            <div class="photo-mask">
+              <span class="photo-mask-icon">💖</span>
+              <span>Tap to reveal memory</span>
+            </div>
+            <img src="photos/photo4.jpg" alt="Our moment">
+          </div>
+          <figcaption>Ih, kunwari pini-picture-an ako pero hindi naman</figcaption>
+        </figure>
+
+        <figure class="photo-card">
+          <div class="photo-wrapper">
+            <div class="photo-mask">
+              <span class="photo-mask-icon">💖</span>
+              <span>Tap to reveal memory</span>
+            </div>
+            <img src="photos/photo5.jpg" alt="Our moment">
+          </div>
+          <figcaption>Pauwi na tayo dito, pero gusto mo ng takoyaki kasi ganon kinakain ng katabi natin HAHA</figcaption>
+        </figure>
+
+        <figure class="photo-card">
+          <div class="photo-wrapper">
+            <div class="photo-mask">
+              <span class="photo-mask-icon">💖</span>
+              <span>Tap to reveal memory</span>
+            </div>
+            <img src="photos/photo6.jpg" alt="Our moment">
+          </div>
+          <figcaption>Hinihintay ko talaga bus mo eh para makasabay kita (STALKER YARN??)</figcaption>
+        </figure>
+
+        <figure class="photo-card">
+          <div class="photo-wrapper">
+            <div class="photo-mask">
+              <span class="photo-mask-icon">💖</span>
+              <span>Tap to reveal memory</span>
+            </div>
+            <img src="photos/photo7.jpg" alt="Our moment">
+          </div>
+          <figcaption>SHAWARMA GUSTO, FRIES BINIGAY. GUSTO KO KASI AKO MAGBAYAD HAHAHA</figcaption>
+        </figure>
+
+        <figure class="photo-card">
+          <div class="photo-wrapper">
+            <div class="photo-mask">
+              <span class="photo-mask-icon">💖</span>
+              <span>Tap to reveal memory</span>
+            </div>
+            <img src="photos/photo8.jpg" alt="Our moment">
+          </div>
+          <figcaption>Nag ramen date din! Kahit ayaw mo sa ramen HAHAHA</figcaption>
+        </figure>
+
+        <figure class="photo-card">
+          <div class="photo-wrapper">
+            <div class="photo-mask">
+              <span class="photo-mask-icon">💖</span>
+              <span>Tap to reveal memory</span>
+            </div>
+            <img src="photos/photo9.jpg" alt="Our moment">
+          </div>
+          <figcaption>Kunwari sumasandal ako pero inaamoy lang talaga kita dito (ANG BANGO MO KASI!)</figcaption>
+        </figure>
+
+        <figure class="photo-card">
+          <div class="photo-wrapper">
+            <div class="photo-mask">
+              <span class="photo-mask-icon">💖</span>
+              <span>Tap to reveal memory</span>
+            </div>
+            <img src="photos/photo10.jpg" alt="Our moment">
+          </div>
+          <figcaption>Wala ako maisip na caption kaya ang masasabi ko nalang ay ang ganda mo</figcaption>
+        </figure>
+
+        <figure class="photo-card">
+          <div class="photo-wrapper">
+            <div class="photo-mask">
+              <span class="photo-mask-icon">💖</span>
+              <span>Tap to reveal memory</span>
+            </div>
+            <img src="photos/photo11.jpg" alt="Our moment">
+          </div>
+          <figcaption>Road to BABIDIIIIIIII</figcaption>
+        </figure>
+
+        <figure class="photo-card">
+          <div class="photo-wrapper">
+            <div class="photo-mask">
+              <span class="photo-mask-icon">💖</span>
+              <span>Tap to reveal memory</span>
+            </div>
+            <img src="photos/photo12.jpg" alt="Our moment">
+          </div>
+          <figcaption>SOFT LAUNCH YARN?</figcaption>
+        </figure>
+
+        <figure class="photo-card">
+          <div class="photo-wrapper">
+            <div class="photo-mask">
+              <span class="photo-mask-icon">💖</span>
+              <span>Tap to reveal memory</span>
+            </div>
+            <img src="photos/photo13.jpg" alt="Our moment">
+          </div>
+          <figcaption>MAS MALAKI PARIN ILONG KO BLEH</figcaption>
+        </figure>
+
+        <figure class="photo-card">
+          <div class="photo-wrapper">
+            <div class="photo-mask">
+              <span class="photo-mask-icon">💖</span>
+              <span>Tap to reveal memory</span>
+            </div>
+            <img src="photos/photo14.jpg" alt="Our moment">
+          </div>
+          <figcaption>Kunwari nagtatakip ng mukha sa picture para mukhang cute (Pero cute naman talaga siya)</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Our tiny timeline</h2>
+
+      <div class="timeline">
+        <article class="memory">
+          <time>July 4, 2026</time>
+          <h3>"Kailan tayo magkakape?"</h3>
+          <p>
+            The day we first started talking—the day a simple coffee invitation became the beginning of something special. (Bakit mo kasi ako inaya magkape, ayan tuloy HAHAHA)
+          </p>
+        </article>
+
+        <article class="memory">
+          <time>July 11, 2026</time>
+          <h3>"Tara, Capital Town tayo"</h3>
+          <p>
+            The day I realized I was starting to feel something special for you, even though I couldn't quite explain what it was. 😛 
+          </p>
+        </article>
+
+        <article class="memory">
+          <time>Today and every day after</time>
+          <h3>You're still the one I want to be with.</h3>
+          <p>
+            I hope our dates won't be the end of our story—I hope there will be many more moments, memories, and chapters for us to share together.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">A letter for you</h2>
+
+      <div class="letter">
+        <div class="letter-header">
+          <p style="margin: 0; font-weight: bold;">My Sunshine/Baby/Wifey,</p>
+          <span class="letter-date">August 3, 2026</span>
+        </div>
+
+        <p>
+          Ang bilis ng 1 month, parang kalian lang yung unang chat natin HAHAHA. Hindi ko alam kung ganito nalang ba tayo or mapo-promote pa ako HAHAHA. Anyways, ayaw ko na isipin yan muna. Kasi masaya naman ako sa ginagawa ko,masaya ako na pinapakita ko yung love ko sayo. Yun lang.
+        </p>
+
+        <p>
+          I just want to say, THANK YOU. Dahil pinasasaya mo ako araw-araw, oras-oras, gabi-gabi HAHAHA. Salamat kasi pumayag ka makipag date sa akin (Ako ay PUMALDO). Salamat, kasi dumating ka sa buhay ko.<br>
+          <em>(PS: Ayaw mo kasi makipag date sa akin this Tuesday, kaya gumawa nalang ako ng ganito HAHAHA)</em>
+        </p>
+
+        <p class="signature">
+          Sincerely yours,<br>
+          Vince Christian B. Medina
+        </p>
+      </div>
+    </section>
+
+    <section class="finale">
+      <h2 class="section-title">One last thing...</h2>
+
+      <div class="reveal-box">
+        <button class="primary-button" id="revealButton">
+          Tap for the final surprise
+        </button>
+
+        <div class="secret" id="secret">
+          <h2>
+            From the bottom of my hypothalamus,<br>
+            I LOVE YOUUUU! 💖
+          </h2>
+          <p>
+            Ngayon, bukas, at magpakailanman, NYAHAHA!
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Photo Lightbox Viewer -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Close photo">&times;</button>
+    <img class="lightbox-content" id="lightboxImg" src="" alt="Full view photo">
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+  </div>
+
+  <audio id="music" loop preload="metadata">
+    <source src="song.mp3" type="audio/mpeg">
+  </audio>
+
+  <button
+    class="music-button"
+    id="musicButton"
+    aria-label="Pause music"
+    title="Play or pause music"
+  >
+    ⏸
+  </button>
+
+  <script>
+    const intro = document.getElementById("intro");
+    const main = document.getElementById("main");
+    const openButton = document.getElementById("openButton");
+    const revealButton = document.getElementById("revealButton");
+    const secret = document.getElementById("secret");
+    const music = document.getElementById("music");
+    const musicButton = document.getElementById("musicButton");
+
+    let isPlaying = false;
+
+    openButton.addEventListener("click", async () => {
+      intro.classList.add("hidden");
+      main.classList.add("visible");
+      document.body.classList.remove("locked");
+
+      try {
+        await music.play();
+        isPlaying = true;
+        musicButton.textContent = "⏸";
+        musicButton.setAttribute("aria-label", "Pause music");
+      } catch (error) {
+        isPlaying = false;
+        musicButton.textContent = "▶";
+        musicButton.setAttribute("aria-label", "Play music");
+      }
+
+      createHearts(12);
+    });
+
+    musicButton.addEventListener("click", async () => {
+      if (isPlaying) {
+        music.pause();
+        isPlaying = false;
+        musicButton.textContent = "▶";
+        musicButton.setAttribute("aria-label", "Play music");
+        return;
+      }
+
+      try {
+        await music.play();
+        isPlaying = true;
+        musicButton.textContent = "⏸";
+        musicButton.setAttribute("aria-label", "Pause music");
+      } catch (error) {
+        console.warn("Music could not be played:", error);
+      }
+    });
+
+    revealButton.addEventListener("click", () => {
+      revealButton.style.display = "none";
+      secret.classList.add("shown");
+      createHearts(40);
+    });
+
+    function createHearts(amount) {
+      const symbols = ["💗", "💖", "💕", "🌸"];
+
+      for (let i = 0; i < amount; i += 1) {
+        setTimeout(() => {
+          const heart = document.createElement("span");
+          heart.className = "heart";
+          heart.textContent =
+            symbols[Math.floor(Math.random() * symbols.length)];
+
+          heart.style.left = `${Math.random() * 100}vw`;
+          heart.style.fontSize = `${18 + Math.random() * 24}px`;
+          heart.style.animationDuration = `${3 + Math.random() * 3}s`;
+
+          document.body.appendChild(heart);
+          heart.addEventListener("animationend", () => heart.remove());
+        }, i * 90);
+      }
+    }
+
+    /* Reveal photos on tap/click & open lightbox if already revealed */
+    const photoCards = document.querySelectorAll('.photo-card');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxCaption = document.getElementById('lightboxCaption');
+    const lightboxClose = document.getElementById('lightboxClose');
+
+    photoCards.forEach(card => {
+      card.addEventListener('click', () => {
+        // First tap: reveal the photo
+        if (!card.classList.contains('revealed')) {
+          card.classList.add('revealed');
+          createHearts(6);
+        } else {
+          // Second tap (already revealed): open full-screen lightbox
+          const img = card.querySelector('img');
+          const caption = card.querySelector('figcaption');
+          lightboxImg.src = img.src;
+          lightboxCaption.textContent = caption ? caption.textContent : '';
+          lightbox.classList.add('active');
+        }
+      });
+    });
+
+    lightbox.addEventListener('click', (e) => {
+      if (e.target !== lightboxImg && e.target !== lightboxCaption) {
+        lightbox.classList.remove('active');
+      }
+    });
+
+    lightboxClose.addEventListener('click', () => {
+      lightbox.classList.remove('active');
+    });
+  </script>
+</body>
+</html>
